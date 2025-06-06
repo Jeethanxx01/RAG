@@ -1,0 +1,377 @@
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Movie Recommendation</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
+		<style>
+			.movie-info {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+			}
+
+			.movie-info h5 {
+				color: #fff;
+				margin-bottom: 10px;
+				font-size: 1.4em;
+				font-weight: bold;
+			}
+
+			.movie-genre {
+				color: #aaa;
+				font-size: 1em;
+				margin-bottom: 5px;
+			}
+
+			.movie-rating {
+				color: #ffd700;
+				font-size: 1em;
+				margin-bottom: 10px;
+			}
+
+			.movie-overview {
+				color: #ddd;
+				font-size: 1em;
+				line-height: 1.5;
+				margin-bottom: 15px;
+			}
+
+			.ai-explanation {
+				background-color: rgba(255, 255, 255, 0.05);
+				border-left: 3px solid #4CAF50;
+				padding: 15px;
+				margin-top: 15px;
+				border-radius: 5px;
+			}
+
+			.ai-explanation p {
+				color: #4CAF50;
+				font-style: italic;
+				margin: 0;
+				font-size: 1em;
+				line-height: 1.5;
+			}
+
+			/* Loading Animation */
+			.loading-spinner {
+				display: none;
+				text-align: center;
+				padding: 20px;
+			}
+
+			.loading-spinner .spinner {
+				width: 40px;
+				height: 40px;
+				border: 4px solid #f3f3f3;
+				border-top: 4px solid #3498db;
+				border-radius: 50%;
+				animation: spin 1s linear infinite;
+				margin: 0 auto;
+			}
+
+			@keyframes spin {
+				0% { transform: rotate(0deg); }
+				100% { transform: rotate(360deg); }
+			}
+
+			/* Loading Animation */
+			.loading-dots {
+				display: none;
+				padding: 15px 0;
+				margin-left: 60px;
+				position: relative;
+			}
+
+			.loading-dots::before {
+				content: '';
+				position: absolute;
+				left: -40px;
+				top: 50%;
+				transform: translateY(-50%);
+				width: 30px;
+				height: 30px;
+				background: url('https://cdn-icons-png.flaticon.com/512/1179/1179120.png') no-repeat center;
+				background-size: contain;
+				border-radius: 50%;
+			}
+
+			.loading-dots .dot {
+				display: inline-block;
+				width: 10px;
+				height: 10px;
+				margin: 0 6px;
+				background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+				border-radius: 50%;
+				animation: dot-pulse 1.5s infinite ease-in-out;
+				box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+				position: relative;
+			}
+
+			.loading-dots .dot::after {
+				content: '';
+				position: absolute;
+				top: -2px;
+				left: -2px;
+				right: -2px;
+				bottom: -2px;
+				background: rgba(76, 175, 80, 0.2);
+				border-radius: 50%;
+				z-index: -1;
+				animation: dot-glow 1.5s infinite ease-in-out;
+			}
+
+			.loading-dots .dot:nth-child(2) {
+				animation-delay: 0.2s;
+			}
+
+			.loading-dots .dot:nth-child(3) {
+				animation-delay: 0.4s;
+			}
+
+			@keyframes dot-pulse {
+				0%, 100% {
+					transform: scale(0.8) translateY(0);
+					opacity: 0.5;
+				}
+				50% {
+					transform: scale(1.2) translateY(-3px);
+					opacity: 1;
+				}
+			}
+
+			@keyframes dot-glow {
+				0%, 100% {
+					transform: scale(1);
+					opacity: 0.3;
+				}
+				50% {
+					transform: scale(1.5);
+					opacity: 0.1;
+				}
+			}
+
+			/* Add a subtle background to the loading area */
+			.loading-dots {
+				background: rgba(255, 255, 255, 0.03);
+				border-radius: 15px;
+				margin-right: 20px;
+				padding: 20px 30px;
+				backdrop-filter: blur(5px);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+			}
+
+			/* Add a subtle typing indicator */
+			.loading-dots::after {
+				content: 'Thinking...';
+				position: absolute;
+				left: 50%;
+				transform: translateX(-50%);
+				bottom: -20px;
+				color: #4CAF50;
+				font-size: 0.9em;
+				opacity: 0.8;
+				font-style: italic;
+			}
+
+			.watch-now-btn {
+				background-color: #e50914;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				border-radius: 5px;
+				font-weight: bold;
+				cursor: pointer;
+				transition: background-color 0.3s ease;
+				margin-top: 15px;
+				align-self: flex-start;
+			}
+
+			.watch-now-btn:hover {
+				background-color: #f40612;
+			}
+		</style>
+	</head>
+	
+	
+	<body>
+		<div class="container-fluid h-100">
+			<div class="row justify-content-center h-100">		
+				<div class="col-md-8 col-xl-6 chat">
+					<div class="card">
+						<div class="card-header msg_head">
+							<div class="d-flex bd-highlight">
+								<div class="img_cont">
+									<img src="https://cdn-icons-png.flaticon.com/512/1179/1179120.png" class="rounded-circle user_img">
+									<span class="online_icon"></span>
+								</div>
+								<div class="user_info">
+									<span>Movie Recommendation Assistant</span>
+									<p>Ask me about movies!</p>
+								</div>
+							</div>
+						</div>
+						<div id="messageFormeight" class="card-body msg_card_body">
+							<!-- Loading Spinner -->
+							<div class="loading-spinner">
+								<div class="spinner"></div>
+								<p style="color: #fff; margin-top: 10px;">Finding the perfect movies for you...</p>
+							</div>
+							<!-- Welcome message -->
+							<div class="d-flex justify-content-start mb-4">
+								<div class="img_cont_msg">
+									<img src="https://cdn-icons-png.flaticon.com/512/1179/1179120.png" class="rounded-circle user_img_msg">
+								</div>
+								<div class="msg_cotainer">
+									Hi! I'm your movie recommendation assistant. You can ask me about:
+									<ul>
+										<li>Movie recommendations by genre</li>
+										<li>Highly rated movies</li>
+										<li>Recent releases</li>
+										<li>Movies by specific actors or directors</li>
+									</ul>
+									<span class="msg_time">Just now</span>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer">
+							<form id="messageArea" class="input-group">
+                                <input type="text" id="text" name="msg" placeholder="Ask about movies..." autocomplete="off" class="form-control type_msg" required/>
+								<div class="input-group-append">
+									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script>
+			$(document).ready(function() {
+				$("#messageArea").on("submit", function(event) {
+					const date = new Date();
+					const hour = date.getHours();
+					const minute = date.getMinutes();
+					const str_time = hour+":"+minute;
+					var rawText = $("#text").val();
+
+					var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">'+ str_time + '</span></div><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" class="rounded-circle user_img_msg"></div></div>';
+					
+					$("#text").val("");
+					$("#messageFormeight").append(userHtml);
+
+					// Add loading dots after user message with fade-in effect
+					var loadingHtml = '<div class="loading-dots" style="opacity: 0;"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+					$("#messageFormeight").append(loadingHtml);
+					$(".loading-dots").show().animate({ opacity: 1 }, 300);
+
+					$.ajax({
+						data: {
+							msg: rawText,	
+						},
+						type: "POST",
+						url: "/get",
+					}).done(function(data) {
+						// Fade out and remove loading dots
+						$(".loading-dots").animate({ opacity: 0 }, 300, function() {
+							$(this).remove();
+						});
+
+						// Parse the response data
+						try {
+							const responseData = JSON.parse(data);
+							let botHtml = ''; // Initialize botHtml
+							
+							// Add each movie recommendation or system message
+							responseData.forEach(item => {
+								// Check if it's a system message (Domain Restriction, Error, or No Movies Found)
+								if (item.title === "Domain Restriction" || item.title === "Error" || item.title === "No Movies Found") {
+									botHtml += `<div class="d-flex justify-content-start mb-4">
+										<div class="img_cont_msg">
+											<img src="https://cdn-icons-png.flaticon.com/512/1179/1179120.png" class="rounded-circle user_img_msg">
+										</div>
+										<div class="msg_cotainer system-message">
+											<h5>${item.title}</h5>
+											<p class="system-message-overview">${item.overview}</p>
+											${item.explanation ? `<p class="system-message-explanation">${item.explanation}</p>` : ''}
+											${item.confidence ? `<p class="confidence-score">Confidence: ${(item.confidence * 100).toFixed(1)}%</p>` : ''}
+											<span class="msg_time">${str_time}</span>
+										</div>
+									</div>`;
+								} else {
+									// Regular movie recommendation
+									if (item.poster_url) {
+										botHtml += `<div class="d-flex justify-content-start mb-4">
+											<div class="img_cont_msg">
+												<img src="https://cdn-icons-png.flaticon.com/512/1179/1179120.png" class="rounded-circle user_img_msg">
+											</div>
+											<div class="msg_cotainer">
+												<div class="movie-recommendation">
+													<img src="${item.poster_url}" class="movie-poster" alt="${item.title}">
+													<div class="movie-info">
+														<h5>${item.title}</h5>
+														<p class="movie-genre">${item.genre}</p>
+														<p class="movie-rating">Rating: ${item.rating}/10</p>
+														<p class="movie-overview">${item.overview}</p>
+														<div class="ai-explanation">
+															<p>${item.explanation}</p>
+														</div>
+														${item.confidence ? `<p class="confidence-score">Query Confidence: ${(item.confidence * 100).toFixed(1)}%</p>` : ''}
+														<button class="watch-now-btn" onclick="window.open('https://www.netflix.com/search?q=${encodeURIComponent(item.title)}', '_blank')">Watch Now</button>
+														<p class="disclaimer-text">Note: This response is generated by a Retrieval-Augmented Generation model. While powerful, it may contain inaccuracies. Please verify the information.</p>
+													</div>
+												</div>
+												<span class="msg_time">${str_time}</span>
+											</div>
+										</div>`;
+									} else {
+										botHtml += `<div class="d-flex justify-content-start mb-4">
+											<div class="img_cont_msg">
+												<img src="https://cdn-icons-png.flaticon.com/512/1179/1179120.png" class="rounded-circle user_img_msg">
+											</div>
+											<div class="msg_cotainer">
+												<div class="movie-recommendation">
+													<div class="movie-info">
+														<h5>${item.title}</h5>
+														<p class="movie-genre">${item.genre}</p>
+														<p class="movie-rating">Rating: ${item.rating}/10</p>
+														<p class="movie-overview">${item.overview}</p>
+														<div class="ai-explanation">
+															<p>${item.explanation}</p>
+														</div>
+														${item.confidence ? `<p class="confidence-score">Query Confidence: ${(item.confidence * 100).toFixed(1)}%</p>` : ''}
+														<button class="watch-now-btn" onclick="window.open('https://www.netflix.com/search?q=${encodeURIComponent(item.title)}', '_blank')">Watch Now</button>
+														<p class="disclaimer-text">Note: This response is generated by a RAG (Retrieval-Augmented Generation) model. While powerful, it may contain inaccuracies. Please verify the information.</p>
+													</div>
+												</div>
+												<span class="msg_time">${str_time}</span>
+											</div>
+										</div>`;
+									}
+								}
+							});
+							
+							$("#messageFormeight").append($.parseHTML(botHtml)); // Append the accumulated HTML
+						} catch (e) {
+							// If the response is not JSON, display it as plain text
+							var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/1179/1179120.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
+							$("#messageFormeight").append($.parseHTML(botHtml));
+						}
+						
+						// Scroll to bottom after new message
+						$("#messageFormeight").scrollTop($("#messageFormeight")[0].scrollHeight);
+					});
+					event.preventDefault();
+				});
+			});
+		</script>
+        
+    </body>
+</html>

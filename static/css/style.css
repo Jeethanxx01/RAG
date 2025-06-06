@@ -1,0 +1,11 @@
+.confidence-score {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.system-message .confidence-score {
+    color: #ff6b6b;
+    font-weight: 500;
+} 
