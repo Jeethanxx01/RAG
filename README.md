@@ -5,6 +5,10 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Active-success)]()
 
+## About
+
+An intelligent movie recommendation system that leverages the power of Google's Gemini API and Retrieval-Augmented Generation (RAG) architecture. This project combines advanced natural language processing with vector-based semantic search to provide context-aware movie recommendations. Built with Flask and Python, it features a modern chat interface that understands user preferences and delivers personalized movie suggestions with detailed information, ratings, and poster images. The system's robust architecture ensures high performance, scalability, and maintainability, making it a perfect showcase of modern AI integration in web applications.
+
 ## 🎯 Project Highlights
 
 - **Advanced AI Integration**: Leverages Google's Gemini API and RAG (Retrieval-Augmented Generation) architecture for intelligent movie recommendations
@@ -177,7 +181,6 @@ movie-recommendation-chatbot/
 
 **Jeethan Joel Crasta**
 - [GitHub](https://github.com/Jeethanxx01)
-- Full-stack developer with expertise in AI/ML integration
 
 ## 📝 License
 
